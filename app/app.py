@@ -7,12 +7,26 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
-# from tensorflow.keras.utils import img_to_array
-# from tensorflow.keras.utils import array_to_img
-# from tensorflow.keras.utils import load_img
+from tensorflow.compat.v1.keras import backend as K  # Used for managing model session
 
-# Load magenta model
-hub_module = load_magenta_model()
+# Forcing tensorflow v1 compatibility
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+from tensorflow.compat.v1 import Session
+
+config = ConfigProto()
+config.gpu_options.allow_growth = True
+sess = Session(config=config)
+
+# Function to load magenta model
+@st.cache(allow_output_mutation=True)
+def load_model():
+    model = load_magenta_model()
+    # model._make_predict_function()
+    # model.summary()  # included to make it visible when model is reloaded
+    session = K.get_session()
+    return model, session
+
 
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
@@ -48,16 +62,21 @@ uploaded_file = st.file_uploader("Choose an image...")
 col1, col2 = st.columns(2)
 segment_styles = {}  # Dict that stores the class label encoded value to style image mappings
 submit_button = 0  # Declaring the submit button outside of the form below in order for it to be accessed later on in the web app
+content_image = 0  # Stores the content image in an array format
+
+# Load model based on current session
+hub_module, session = load_model()  # Load magenta model and session
+if uploaded_file:
+    K.set_session(session)
 
 if uploaded_file is not None:
     with col1:
         st.image(uploaded_file, use_column_width=True)
     with col2:
         with st.spinner("Processing..."):
-            image = Image.open(uploaded_file)
-            image = np.array(image)
-            # print(image)
-            le_mask, rgb_mask, foreground_heatmap, objects = segment_image(image)
+            content_image = Image.open(uploaded_file)
+            content_image = np.array(content_image)
+            le_mask, rgb_mask, foreground_heatmap, objects = segment_image(content_image)
             st.image(rgb_mask, use_column_width=True)
             st.image(foreground_heatmap, use_column_width=True)
 
@@ -85,24 +104,14 @@ if uploaded_file is not None:
                 segment_styles[cur_class] = styles[i] + '.jpg'
             else:
                 segment_styles[cur_class] = None
-        print(segment_styles)
+        # print(segment_styles)
 
     if submit_button:
-        st.write('submitted')
-        # Stylize image based on segments and display output to user
-        # segment_styles  # Segment styles
-        # hub_module
-        # content_image_path =
-        content_image = Image.open(uploaded_file)
-        content_image = np.array(content_image)
-        # print(content_image.shape)
+        st.write('Output')
+        with st.spinner("Processing..."):
 
-        # content_image = img_to_array(content_image)
-        # content_image = plt.imread(uploaded_file)
-        # print(content_image)
-        # print(f'segment styles {segment_styles}')
-
-
-        segmented_img = masked_stylize(content_image, le_mask, segment_styles, hub_module)
-        # print(segmented_img)
-        st.image(segmented_img)
+            # Stylize image based on segments and display output to user
+            # content_image = Image.open(uploaded_file)
+            # content_image = np.array(content_image)
+            segmented_img = masked_stylize(content_image, le_mask, segment_styles, hub_module)
+            st.image(segmented_img)

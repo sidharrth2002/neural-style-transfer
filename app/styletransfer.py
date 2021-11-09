@@ -8,9 +8,9 @@ import tensorflow_hub as hub
 import cv2
 
 # Forcing tensorflow v1 compatibility
-from tensorflow.compat.v1 import ConfigProto
-from tensorflow.compat.v1 import InteractiveSession
-from tensorflow.compat.v1 import Session
+# from tensorflow.compat.v1 import ConfigProto
+# from tensorflow.compat.v1 import InteractiveSession
+# from tensorflow.compat.v1 import Session
 
 
 SEGMENT_STYLES = {}  # Global constant
@@ -24,9 +24,9 @@ print(f'The style images available by default are: {style_images}\n')
 for i in style_images:
     SEGMENT_STYLES[i] = plt.imread(os.path.join(IMG_DIR, 'styles', i))
 
-config = ConfigProto()
-config.gpu_options.allow_growth = True
-sess = Session(config=config)
+# config = ConfigProto()
+# config.gpu_options.allow_growth = True
+# sess = Session(config=config)
 
 ##### Utility functions related to loading the magenta model and stylizing image using magenta model
 
@@ -80,10 +80,10 @@ def masked_stylize(content_image, mask, segment_styles, hub_module):
 
     dim = 320
     stylized_image = cv2.resize(stylized_image, (dim, dim))  # TODO: we are resizing the content image to be 320 by 320, perhaps we should resize the segmentation mask instead
-    print(segment_styles.get(mask_classes[-1]))
+    # print(segment_styles.get(mask_classes[-1]))
     for i, val in enumerate(mask_classes):
         # `val` indicates the value of the current class within the image mask
-        print(val, segment_styles.get(val))
+        # print(val, segment_styles.get(val))
         if val not in styles_to_segment or segment_styles.get(val) is None:
             continue
         cur_layer = stylized_image.copy()
