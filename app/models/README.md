@@ -1,0 +1,1 @@
+Download the model from Google Drive, create a folder called `unet`, add model to the folder and rename file as `trained_model.pth`.
