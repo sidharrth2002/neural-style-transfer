@@ -57,7 +57,21 @@ st.markdown('''
 Upload an image -> Wait for the segmentation model -> Choose a style for each segment -> *Voila!*
 ''')
 
-uploaded_file = st.file_uploader("Choose an image...")
+uploaded_file = st.file_uploader("Choose an image to perform style transfer...")
+
+# Declare radio buttons for getting user feature choice
+genres = ['Single style transfer', 'Foreground extraction using the GrabCut algorithm', 'Semantic style transfer using UNET']
+genre_radio = st.radio('Style transfer genre', genres)
+
+if genre_radio == genres[0]:
+    # Single style transfer
+    print()
+elif genre_radio == genres[1]:
+    # GrabCut for FGBG extraction, then style transfer
+    print()
+elif genre_radio == genres[2]:
+    # UNET semantic segmentation, then style transfer
+    print()
 
 col1, col2 = st.columns(2)
 segment_styles = {}  # Dict that stores the class label encoded value to style image mappings
