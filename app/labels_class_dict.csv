@@ -1,0 +1,10 @@
+class_names,r,g,b
+sky,68,1,84
+tree,72,40,140
+road,62,74,137
+grass,38,130,142
+water,31,158,137
+building,53,183,121
+mountain,109,205,89
+foreground,180,222,44
+unknown,49,104,142
