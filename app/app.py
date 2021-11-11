@@ -7,12 +7,17 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import cv2
 from tensorflow.compat.v1.keras import backend as K  # Used for managing model session
 
 # Forcing tensorflow v1 compatibility
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.compat.v1 import Session
+from download_image import get_image_download_link
+
+from streamlit_webrtc import webrtc_streamer
+import av
 
 config = ConfigProto()
 config.gpu_options.allow_growth = True
@@ -69,6 +74,9 @@ hub_module, session = load_model()  # Load magenta model and session
 # if uploaded_file:
 K.set_session(session)
 
+if uploaded_file:
+    content_image = Image.open(uploaded_file)
+    content_image = np.array(content_image)
 
 # Declare radio buttons for getting user feature choice
 genres = ['Single style transfer', 'Custom foreground and background mask', 'Foreground extraction using the GrabCut algorithm', 'Semantic style transfer using UNET']
@@ -78,8 +86,7 @@ if genre_radio == genres[0]:
     # Single style transfer
     col1, col2 = st.columns(2)
     if uploaded_file is not None:
-        content_image = Image.open(uploaded_file)
-        content_image = np.array(content_image)
+        content_image = cv2.resize(content_image, (320, 320))
         with col1:
             st.image(uploaded_file, use_column_width=True)
         with col2:
@@ -102,12 +109,14 @@ if genre_radio == genres[0]:
                 else:
                     single_stylized = content_image.copy()
                 st.image(single_stylized, clamp=True)
+                st.markdown(get_image_download_link(single_stylized), unsafe_allow_html=True)
+
 elif genre_radio == genres[1]:
     # Upload custom mask
     col1, col2 = st.columns(2)
     if uploaded_file is not None:
-        content_image = Image.open(uploaded_file)
-        content_image = np.array(content_image)
+        # content_image = Image.open(uploaded_file)
+        # content_image = np.array(content_image)
         with col1:
             st.image(uploaded_file, use_column_width=True)
         with col2:
@@ -147,9 +156,12 @@ elif genre_radio == genres[1]:
                         # Stylize image based on segments and display output to user
                         layered_segmented_img = masked_stylize(content_image, custom_mask, segment_styles, hub_module)
                         st.image(layered_segmented_img, clamp=True)
+                        st.markdown(get_image_download_link(layered_segmented_img), unsafe_allow_html=True)
+
 elif genre_radio == genres[2]:
     # GrabCut for FGBG extraction, then style transfer
-    print()
+    pass
+
 elif genre_radio == genres[3]:
     # UNET semantic segmentation, then style transfer
     col1, col2 = st.columns(2)
@@ -158,8 +170,8 @@ elif genre_radio == genres[3]:
             st.image(uploaded_file, use_column_width=True)
         with col2:
             with st.spinner("Processing..."):
-                content_image = Image.open(uploaded_file)
-                content_image = np.array(content_image)
+                # content_image = Image.open(uploaded_file)
+                # content_image = np.array(content_image)
                 le_mask, rgb_mask, foreground_heatmap, objects = segment_image(content_image)
                 st.image(rgb_mask, use_column_width=True)
                 st.image(foreground_heatmap, use_column_width=True)
@@ -199,3 +211,27 @@ elif genre_radio == genres[3]:
                 # content_image = np.array(content_image)
                 segmented_img = masked_stylize(content_image, le_mask, segment_styles, hub_module, True)
                 st.image(segmented_img, clamp=True)
+                st.markdown(get_image_download_link(segmented_img), unsafe_allow_html=True)
+
+st.markdown('### Or better yet, use your webcam!')
+
+single_form = st.form(key='single_style_form2')
+single_form_response = single_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
+# Single style transfer submit_button
+single_submit_button = single_form.form_submit_button(label='Single Stylize')
+
+if single_submit_button:
+    st.write('Output')
+    single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', f'{single_form_response}.jpg'))
+else:
+    single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', 'Starry Night.jpg'))
+class VideoProcessor:
+    def recv(self, frame):
+        img = frame.to_ndarray(format="bgr24")
+        frame_stylized = style_img_magenta(img, single_style_image, hub_module)
+        frame_stylized = np.squeeze(frame_stylized)  # Convert EagerTensor instance to a typical image dimension
+        print(frame_stylized)
+        # cv2.imwrite('temp.jpg', frame_stylized * 255)
+        return av.VideoFrame.from_ndarray(frame_stylized * 255, format="rgb24")
+
+webrtc_streamer(key="example", video_processor_factory=VideoProcessor)
