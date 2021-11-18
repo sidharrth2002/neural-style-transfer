@@ -9,20 +9,21 @@ import pandas as pd
 import os
 import matplotlib.pyplot as plt
 import cv2
+from download_image import get_image_download_link
 from tensorflow.compat.v1.keras import backend as K  # Used for managing model session
 
+
+# If you are using GPU, you should uncomment tensorflow v1 compatibility
+# However, there may be errors that arise due to version issues with tensorflow and CuDNN
+# We developed this application fully on CPU, without using GPU, due to compatibility issues among our computers
+
 # Forcing tensorflow v1 compatibility
-from tensorflow.compat.v1 import ConfigProto
-from tensorflow.compat.v1 import InteractiveSession
-from tensorflow.compat.v1 import Session
-from download_image import get_image_download_link
-
-from streamlit_webrtc import webrtc_streamer
-import av
-
-config = ConfigProto()
-config.gpu_options.allow_growth = True
-sess = Session(config=config)
+# from tensorflow.compat.v1 import ConfigProto
+# from tensorflow.compat.v1 import InteractiveSession
+# from tensorflow.compat.v1 import Session
+# config = ConfigProto()
+# config.gpu_options.allow_growth = True
+# sess = Session(config=config)
 
 # Function to load magenta model
 @st.cache(allow_output_mutation=True)
@@ -33,18 +34,15 @@ def load_model():
     session = K.get_session()
     return model, session
 
-
 st.set_option('deprecation.showfileUploaderEncoding', False)
 
 DATA_DIR = './'
 IMG_DIR = './images'
 class_dict = pd.read_csv(os.path.join(DATA_DIR, 'labels_class_dict.csv'))
-# Get class names
-class_names = class_dict['class_names'].tolist()
-# Get class RGB values
-class_rgb_values = class_dict[['r','g','b']].values.tolist()
-
+class_names = class_dict['class_names'].tolist()  # Get class names
+class_rgb_values = class_dict[['r','g','b']].values.tolist()  # Get class RGB values
 select_classes = ['sky', 'tree', 'road', 'grass', 'water', 'building', 'mountain', 'foreground', 'unknown']
+
 # Get RGB values of required classes
 select_class_indices = [class_names.index(cls.lower()) for cls in select_classes]
 select_class_rgb_values =  np.array(class_rgb_values)[select_class_indices]
@@ -72,7 +70,6 @@ content_image = 0  # Stores the content image in an array format
 
 # Load model based on current session
 hub_module, session = load_model()  # Load magenta model and session
-# if uploaded_file:
 K.set_session(session)
 
 if uploaded_file:
@@ -116,8 +113,6 @@ elif genre_radio == genres[1]:
     # Upload custom mask
     col1, col2 = st.columns(2)
     if uploaded_file is not None:
-        # content_image = Image.open(uploaded_file)
-        # content_image = np.array(content_image)
         with col1:
             st.image(uploaded_file, use_column_width=True)
         with col2:
@@ -167,16 +162,10 @@ elif genre_radio == genres[2]:
         st1.image(content_image, use_column_width=True)
         foreground = get_foreground(content_image)
 
-        # with np.printoptions(threshold=np.inf):
-        #     print(foreground)
-        # print(foreground.shape)
         fg_display = foreground.copy()
         fg_display[fg_display == 1] = 255
         st2.image(fg_display, clamp=True, channels='Grayscale')
         plt.imshow(fg_display, cmap='gray')
-        # cv2.imwrite('foreground.jpg', foreground)
-
-        # single_form_response = gc_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
 
         # Assign 2 as foreground, 1 as background
         gc_layer_labels = {2: 'Foreground', 1: 'Background'}
@@ -204,29 +193,17 @@ elif genre_radio == genres[2]:
                 if num_styles_used > 0:
                     foreground[foreground == 1] = 2
                     foreground[foreground == 0] = 1
-                    # single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', f'{single_form_response}.jpg'))
-                    # single_stylized = style_img_magenta(content_image, single_style_image, hub_module)
-                    # st.image(segmented_img, clamp=True)
-                    # single_stylized = np.squeeze(single_stylized)  # Convert EagerTensor instance to a typical image dimension
-
 
                     for i, f in enumerate(gc_lkeys):
                         if gc_layer_styles[i] != 'None':
                             gc_segment_styles[f] = gc_layer_styles[i] + '.jpg'
                         else:
                             gc_segment_styles[f] = None
-
-                    # gc_segment_styles = {1: single_form_response + '.jpg', 2: None}
-                    # print(gc_segment_styles)
-                    # print('Unique pixels')
                     segmented_img = masked_stylize(content_image, foreground, gc_segment_styles, hub_module, True)
-
-
                 else:
                     segmented_img = content_image.copy()
                 st.image(segmented_img, clamp=True)
                 st.markdown(get_image_download_link(segmented_img), unsafe_allow_html=True)
-
 
 elif genre_radio == genres[3]:
     # UNET semantic segmentation, then style transfer
@@ -236,14 +213,10 @@ elif genre_radio == genres[3]:
             st.image(uploaded_file, use_column_width=True)
         with col2:
             with st.spinner("Processing..."):
-                # content_image = Image.open(uploaded_file)
-                # content_image = np.array(content_image)
                 le_mask, rgb_mask, foreground_heatmap, objects = segment_image(content_image)
                 st.image(rgb_mask, use_column_width=True)
                 st.image(foreground_heatmap, use_column_width=True)
 
-            # print(objects)
-            # only get objects that appear in at least 1 pixel
             filtered_objects = []
             for i in objects:
                 if(objects[i] > 0):
@@ -271,33 +244,6 @@ elif genre_radio == genres[3]:
         if submit_button:
             st.write('Output')
             with st.spinner("Processing..."):
-
-                # Stylize image based on segments and display output to user
-                # content_image = Image.open(uploaded_file)
-                # content_image = np.array(content_image)
                 segmented_img = masked_stylize(content_image, le_mask, segment_styles, hub_module, True)
                 st.image(segmented_img, clamp=True)
                 st.markdown(get_image_download_link(segmented_img), unsafe_allow_html=True)
-
-# st.markdown('### Or better yet, use your webcam!')
-
-# single_form = st.form(key='single_style_form2')
-# single_form_response = single_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
-# # Single style transfer submit_button
-# single_submit_button = single_form.form_submit_button(label='Single Stylize')
-
-# if single_submit_button:
-#     st.write('Output')
-#     single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', f'{single_form_response}.jpg'))
-# else:
-#     single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', 'Starry Night.jpg'))
-# class VideoProcessor:
-#     def recv(self, frame):
-#         img = frame.to_ndarray(format="bgr24")
-#         frame_stylized = style_img_magenta(img, single_style_image, hub_module)
-#         frame_stylized = np.squeeze(frame_stylized)  # Convert EagerTensor instance to a typical image dimension
-#         print(frame_stylized)
-#         # cv2.imwrite('temp.jpg', frame_stylized * 255)
-#         return av.VideoFrame.from_ndarray(frame_stylized * 255, format="rgb24")
-
-# webrtc_streamer(key="example", video_processor_factory=VideoProcessor)

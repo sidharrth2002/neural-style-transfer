@@ -187,7 +187,6 @@ Input: Image
 Output: Mask, Foreground Heatmap and Dictionary of Objects in Image
 '''
 def segment_image(image):
-    # print(type(image))
     true_dimensions = image.shape
     image = preprocessing_fn(image)
     image = cv2.resize(image, (320, 320))
@@ -214,7 +213,6 @@ def segment_image(image):
     # What objects are in the image and how many pixels for each object?
     objects = {}
     for i in range(len(select_classes)):
-        # print(select_classes[i])
         segment = select_class_rgb_values[i]
         count = np.count_nonzero(np.all(rgb_mask == segment, axis=2))
         objects[select_classes[i]] = count

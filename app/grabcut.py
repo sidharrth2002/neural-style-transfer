@@ -13,6 +13,7 @@ from detectron2.config import get_cfg
 from detectron2.modeling import build_model
 
 import torch
+print('Are we using GPU?')
 print(torch.cuda.is_available())
 
 import os
@@ -57,6 +58,7 @@ def get_mask(image, mask, bbox, content):
     mask2 = cv2.GaussianBlur(mask2, (3, 3), 0)
 
     foreground = np.copy(image).astype(float)
+
     foreground[mask2 == 0] = 0
     foreground[mask2 == 1] = 1
 
@@ -102,12 +104,7 @@ def get_foreground(image):
 
   content = '1'
   final_image = get_mask(image.copy(), mask.copy(), bbox, content)
-  # with np.printoptions(threshold=np.inf):
-  #   print(final_image)
   twodimage = np.zeros((final_image.shape[0], final_image.shape[1]))
   twodimage = final_image[:,:,0]
-  print(twodimage.shape)
   twodimage = twodimage.astype(np.uint8)
-  print('Unique pixels in Grabcut function')
-  print(np.unique(twodimage))
   return twodimage
