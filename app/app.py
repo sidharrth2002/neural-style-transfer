@@ -134,7 +134,7 @@ elif genre_radio == genres[1]:
                 # Assign 2 as foreground, 1 as background
                 custom_mask[custom_mask == 255] = 2
                 custom_mask[custom_mask == 0] = 1
-                layer_labels = {2: 'foreground', 1: 'background'}
+                layer_labels = {2: 'Foreground', 1: 'Background'}
                 layer_styles = []
 
                 layered_form = st.form(key='custom_mask_form')
@@ -163,38 +163,65 @@ elif genre_radio == genres[2]:
     # GrabCut for FGBG extraction, then style transfer
     st1, st2 = st.columns(2)
     if uploaded_file is not None:
-        single_form = st.form(key='single_style_form_foreground')
+        gc_form = st.form(key='single_style_form_foreground')
         st1.image(content_image, use_column_width=True)
         foreground = get_foreground(content_image)
 
         # with np.printoptions(threshold=np.inf):
         #     print(foreground)
         # print(foreground.shape)
+        fg_display = foreground.copy()
+        fg_display[fg_display == 1] = 255
+        st2.image(fg_display, clamp=True, channels='Grayscale')
+        plt.imshow(fg_display, cmap='gray')
+        # cv2.imwrite('foreground.jpg', foreground)
 
-        st2.image(foreground, clamp=True)
+        # single_form_response = gc_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
 
-        st.write(foreground)
+        # Assign 2 as foreground, 1 as background
+        gc_layer_labels = {2: 'Foreground', 1: 'Background'}
+        gc_layer_styles = []
+        gc_segment_styles = {}  # Reset the segment styles dictionary
 
-        single_form_response = single_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
+        gc_layered_form = st.form(key='grabcut_mask_form')
+        gc_lkeys = gc_layer_labels.keys()
+        for lk in gc_lkeys:
+            gc_lf = gc_layered_form.selectbox(gc_layer_labels[lk], STYLE_IMG_NAMES)
+            gc_layer_styles.append(gc_lf)
+        gc_layered_button = gc_layered_form.form_submit_button(label='Stylize Grabcut Segments')
 
-        # Single style transfer submit_button
-        single_submit_button = single_form.form_submit_button(label='Single Stylize')
-
-        if single_submit_button:
-            st.write('Output')
+        if gc_layered_button:
+            st.write('Generated output')
             with st.spinner("Processing..."):
                 # Stylize image based on segments and display output to user
                 single_stylized = 0  # Temp variable for storing single stylized image
-                if single_form_response != 'None':
-                    segment_styles = {0: single_form_response + '.jpg', 1: None}
-                    print(segment_styles)
-                    print('Unique pixels')
-                    print(np.unique(foreground))
-                    segmented_img = masked_stylize(content_image, foreground, segment_styles, hub_module, True)
+
+                num_styles_used = 0
+                for i in gc_layer_styles:
+                    if i != 'None':
+                        num_styles_used += 1
+
+                if num_styles_used > 0:
+                    foreground[foreground == 1] = 2
+                    foreground[foreground == 0] = 1
                     # single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', f'{single_form_response}.jpg'))
                     # single_stylized = style_img_magenta(content_image, single_style_image, hub_module)
                     # st.image(segmented_img, clamp=True)
                     # single_stylized = np.squeeze(single_stylized)  # Convert EagerTensor instance to a typical image dimension
+
+
+                    for i, f in enumerate(gc_lkeys):
+                        if gc_layer_styles[i] != 'None':
+                            gc_segment_styles[f] = gc_layer_styles[i] + '.jpg'
+                        else:
+                            gc_segment_styles[f] = None
+
+                    # gc_segment_styles = {1: single_form_response + '.jpg', 2: None}
+                    # print(gc_segment_styles)
+                    # print('Unique pixels')
+                    segmented_img = masked_stylize(content_image, foreground, gc_segment_styles, hub_module, True)
+
+
                 else:
                     segmented_img = content_image.copy()
                 st.image(segmented_img, clamp=True)

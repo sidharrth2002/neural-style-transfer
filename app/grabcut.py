@@ -107,4 +107,7 @@ def get_foreground(image):
   twodimage = np.zeros((final_image.shape[0], final_image.shape[1]))
   twodimage = final_image[:,:,0]
   print(twodimage.shape)
-  return twodimage.astype(np.uint8)
+  twodimage = twodimage.astype(np.uint8)
+  print('Unique pixels in Grabcut function')
+  print(np.unique(twodimage))
+  return twodimage

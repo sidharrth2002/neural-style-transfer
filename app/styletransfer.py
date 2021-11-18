@@ -82,6 +82,7 @@ def masked_stylize(content_image, mask, segment_styles, hub_module, resize_dim =
         dim = 320
         stylized_image = cv2.resize(stylized_image, (dim, dim))  # TODO: we are resizing the content image to be 320 by 320, perhaps we should resize the segmentation mask instead
         stylized_norm_image = cv2.resize(stylized_norm_image, (dim, dim))  # TODO: we are resizing the content image to be 320 by 320, perhaps we should resize the segmentation mask instead
+        mask = cv2.resize(mask, (dim, dim))
 
     print('Styles to segment are')
     print(styles_to_segment)
@@ -102,8 +103,8 @@ def masked_stylize(content_image, mask, segment_styles, hub_module, resize_dim =
         print(cur_mask)
         print(cur_mask.shape)
         print(np.unique(cur_mask))
-        print(list(cur_mask.flatten()).count(0))
         print(list(cur_mask.flatten()).count(1))
+        print(list(cur_mask.flatten()).count(2))
         cur_style_name = segment_styles.get(val)  # TODO: ont hahrdcode here
         cur_style = plt.imread(os.path.join(IMG_DIR, 'styles', cur_style_name))
         cur_layer = style_img_magenta(cur_layer, cur_style, hub_module)  # Get style of current layer
