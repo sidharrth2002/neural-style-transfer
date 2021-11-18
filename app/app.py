@@ -1,5 +1,6 @@
 import streamlit as st
 from segment import segment_image
+from grabcut import get_foreground
 from styletransfer import load_magenta_model, style_img_magenta, masked_stylize
 # Importing the functions to load magenta model, stylize each image in magenta, and to perform masked stylization
 from PIL import Image
@@ -160,7 +161,45 @@ elif genre_radio == genres[1]:
 
 elif genre_radio == genres[2]:
     # GrabCut for FGBG extraction, then style transfer
-    pass
+    st1, st2 = st.columns(2)
+    if uploaded_file is not None:
+        single_form = st.form(key='single_style_form_foreground')
+        st1.image(content_image, use_column_width=True)
+        foreground = get_foreground(content_image)
+
+        # with np.printoptions(threshold=np.inf):
+        #     print(foreground)
+        # print(foreground.shape)
+
+        st2.image(foreground, clamp=True)
+
+        st.write(foreground)
+
+        single_form_response = single_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
+
+        # Single style transfer submit_button
+        single_submit_button = single_form.form_submit_button(label='Single Stylize')
+
+        if single_submit_button:
+            st.write('Output')
+            with st.spinner("Processing..."):
+                # Stylize image based on segments and display output to user
+                single_stylized = 0  # Temp variable for storing single stylized image
+                if single_form_response != 'None':
+                    segment_styles = {0: single_form_response + '.jpg', 1: None}
+                    print(segment_styles)
+                    print('Unique pixels')
+                    print(np.unique(foreground))
+                    segmented_img = masked_stylize(content_image, foreground, segment_styles, hub_module, True)
+                    # single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', f'{single_form_response}.jpg'))
+                    # single_stylized = style_img_magenta(content_image, single_style_image, hub_module)
+                    # st.image(segmented_img, clamp=True)
+                    # single_stylized = np.squeeze(single_stylized)  # Convert EagerTensor instance to a typical image dimension
+                else:
+                    segmented_img = content_image.copy()
+                st.image(segmented_img, clamp=True)
+                st.markdown(get_image_download_link(segmented_img), unsafe_allow_html=True)
+
 
 elif genre_radio == genres[3]:
     # UNET semantic segmentation, then style transfer
@@ -200,7 +239,7 @@ elif genre_radio == genres[3]:
                     segment_styles[cur_class] = styles[i] + '.jpg'
                 else:
                     segment_styles[cur_class] = None
-            # print(segment_styles)
+            print(segment_styles)
 
         if submit_button:
             st.write('Output')
@@ -213,25 +252,25 @@ elif genre_radio == genres[3]:
                 st.image(segmented_img, clamp=True)
                 st.markdown(get_image_download_link(segmented_img), unsafe_allow_html=True)
 
-st.markdown('### Or better yet, use your webcam!')
+# st.markdown('### Or better yet, use your webcam!')
 
-single_form = st.form(key='single_style_form2')
-single_form_response = single_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
-# Single style transfer submit_button
-single_submit_button = single_form.form_submit_button(label='Single Stylize')
+# single_form = st.form(key='single_style_form2')
+# single_form_response = single_form.selectbox('Style to transfer', STYLE_IMG_NAMES)
+# # Single style transfer submit_button
+# single_submit_button = single_form.form_submit_button(label='Single Stylize')
 
-if single_submit_button:
-    st.write('Output')
-    single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', f'{single_form_response}.jpg'))
-else:
-    single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', 'Starry Night.jpg'))
-class VideoProcessor:
-    def recv(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        frame_stylized = style_img_magenta(img, single_style_image, hub_module)
-        frame_stylized = np.squeeze(frame_stylized)  # Convert EagerTensor instance to a typical image dimension
-        print(frame_stylized)
-        # cv2.imwrite('temp.jpg', frame_stylized * 255)
-        return av.VideoFrame.from_ndarray(frame_stylized * 255, format="rgb24")
+# if single_submit_button:
+#     st.write('Output')
+#     single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', f'{single_form_response}.jpg'))
+# else:
+#     single_style_image = plt.imread(os.path.join(IMG_DIR, 'styles', 'Starry Night.jpg'))
+# class VideoProcessor:
+#     def recv(self, frame):
+#         img = frame.to_ndarray(format="bgr24")
+#         frame_stylized = style_img_magenta(img, single_style_image, hub_module)
+#         frame_stylized = np.squeeze(frame_stylized)  # Convert EagerTensor instance to a typical image dimension
+#         print(frame_stylized)
+#         # cv2.imwrite('temp.jpg', frame_stylized * 255)
+#         return av.VideoFrame.from_ndarray(frame_stylized * 255, format="rgb24")
 
-webrtc_streamer(key="example", video_processor_factory=VideoProcessor)
+# webrtc_streamer(key="example", video_processor_factory=VideoProcessor)
