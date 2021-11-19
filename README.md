@@ -15,7 +15,9 @@ Style transfer algorithms have shown remarkable performance in recent years. In 
 
 #### Downloading the trained segmentation model
 
-You can download the trained segmentation model from [here](https://drive.google.com/file/d/1h0dt6X_ZKuc_fgcpMSkLlM6sbrfX7xLd/view?usp=sharing).
+You can download the trained Pytorch UNet segmentation model from [here](https://drive.google.com/file/d/1h0dt6X_ZKuc_fgcpMSkLlM6sbrfX7xLd/view?usp=sharing) as 'trained-model.pth'.
+
+You can find the Detectron2 pretrained model from [here](https://drive.google.com/file/d/1h0dt6X_ZKuc_fgcpMSkLlM6sbrfX7xLd/view?usp=sharing) named as 'model_final_a3ec72.pkl', courtesy of Facebook AI Research.
 
 Magenta model is pretrained and small enough and can be found in both the parent and app/ models folder.
 
