@@ -1,9 +1,11 @@
 # Semantically Segmented Neural Style Transfer
 ### Combined semantic segmentation with multiple style transfer
 
+Sidharrth Nagappan, Nadia Ahmad Pirdaus and Cornelius Pang
+
 #### Abstract
 
-This work proposes a web application that demonstrates the power of neural style transfer when coupled with foreground-background and automated semantic segmentation. Pioneered training on the Stanford Background dataset, the style transfer app is capable of generating remarkably aesthetic results albeit unconventional ones at times. The main motivation of this application is to enable users to convert their memorable moments captured in images into wonderful works of art from various well-known styles. Reference code for this project is available at: https://github.com/sidharrth2002/neural-style-transfer
+This work proposes a web application that demonstrates the power of neural style transfer when coupled with foreground-background and automated semantic segmentation. Pioneered training on the Stanford Background dataset, the style transfer app is capable of generating remarkably aesthetic results albeit unconventional ones at times. The main motivation of this application is to enable users to convert their memorable moments captured in images into wonderful works of art from various well-known styles.
 
 #### Introduction
 
@@ -11,18 +13,15 @@ Pablo Picasso once said “good artists copy, great artists steal”. In art, th
 
 Style transfer algorithms have shown remarkable performance in recent years. In this work, we propose a semantically segmented style transfer algorithm that combines the benefits of scene parsing with style transfer to generate aesthetically interesting graphics. A combination of several style transfer algorithms, segmentation models and image processing techniques will be fused into a pipeline for what we term semantically segmented artistic style transfer.
 
-#### Datasets
+#### Downloading the trained segmentation model
 
-Stanford Backgrounds
+You can download the trained segmentation model from [here](https://drive.google.com/file/d/1h0dt6X_ZKuc_fgcpMSkLlM6sbrfX7xLd/view?usp=sharing).
 
-##### Segmentation
-
-The project will employ a Stanford Background dataset that features images taken in different outdoor scenes with the  occasional cameo from passersby. This dataset will be used to assess the quality of outputs on the app.
-
-There are several reasons why this dataset was chosen to provide training images for our model. For one, the dataset sports a total of 715 images while being merely 14 MB in size, making it particularly lightweight. This will allow space to be conserved, and reduce computation time needed to train the model as there are not that many images to begin with. Furthermore, the dataset aligns with the concept and idea of style transfer, where the goal is not to style everything, but rather only certain objects of note. The minimalist nature of the class labels in this dataset support this idea, making it easier for us to manipulate them accordingly.
-
+Magenta model is pretrained and small enough and can be found in both the parent and app/ models folder.
 
 #### Running the app
+
+**Note: Do not run the notebooks.**
 
 Ensure all requirements are downloaded. If not, create a virtual environment and:
 
@@ -36,4 +35,34 @@ After this, you can run the app:
 streamlit run app.py
 ```
 
-You have to go into /app/models and create a new folder called unet. Afterwhich, download the model from Google Drive and add it to the folder.
+#### Results
+
+<img src="./sid.png">
+<br/>
+
+<img src="./corn.png">
+<br />
+
+<img src="./nadia.png">
+<br />
+
+<img src="./obama.png">
+<br />
+
+<img src="./obama-2.png">
+<br />
+
+#### References
+
+Kyprianidis, J. E., Collomosse, J., Wang, T., & Isenberg, T. (2013). State of the "Art”: A taxonomy of artistic stylization techniques for images and video. IEEE Transactions on Visualization and Computer Graphics, vol. 19, no. 5, pp. 866-885. doi: 10.1109/TVCG.2012.160.
+
+Efros, A. A., & Leung, T. K. (1999). Texture synthesis by non-parametric sampling. Proceedings of the Seventh IEEE International Conference on Computer Vision, 2, 1033-1038 vol.2.
+
+Gatys, L. A., Ecker A. S., & Bethge, M. (2016). Image style transfer using convolutional neural networks. 2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR), pp. 2414-2423. doi: 10.1109/CVPR.2016.265.
+
+Prisma Labs. (2016). Styling solely the foreground or background of an image [Screenshot]. Lensa. https://prisma-ai.com/
+
+
+Ghiasi, G., Lee, H., Kudlur, M., Dumoulin, V., & Shlens, J. (2017). Exploring the structure of a real-time, arbitrary neural artistic stylization network. British Machine Vision Conference (BMVC) 2017.
+
+Makow, N., & Hernandez, P. (2017). Exploring style transfer: Extensions to neural style transfer.
