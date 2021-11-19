@@ -13,13 +13,14 @@ Pablo Picasso once said “good artists copy, great artists steal”. In art, th
 
 Style transfer algorithms have shown remarkable performance in recent years. In this work, we propose a semantically segmented style transfer algorithm that combines the benefits of scene parsing with style transfer to generate aesthetically interesting graphics. A combination of several style transfer algorithms, segmentation models and image processing techniques will be fused into a pipeline for what we term semantically segmented artistic style transfer.
 
-#### Downloading the trained segmentation model
+#### Downloading the trained models
 
 You can download the trained Pytorch UNet segmentation model from [here](https://drive.google.com/file/d/1h0dt6X_ZKuc_fgcpMSkLlM6sbrfX7xLd/view?usp=sharing) as 'trained-model.pth'.
 
 You can find the Detectron2 pretrained model from [here](https://drive.google.com/file/d/1h0dt6X_ZKuc_fgcpMSkLlM6sbrfX7xLd/view?usp=sharing) named as 'model_final_a3ec72.pkl', courtesy of Facebook AI Research.
 
-Magenta model is pretrained and small enough and can be found in both the parent and app/ models folder.
+You can find the Magenta pretrained model from [here](https://drive.google.com/file/d/1h0dt6X_ZKuc_fgcpMSkLlM6sbrfX7xLd/view?usp=sharing).
+
 
 #### Running the app
 
