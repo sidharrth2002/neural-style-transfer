@@ -1,5 +1,5 @@
 # Semantically Segmented Neural Style Transfer
-### Combined semantic segmentation with multiple style transfer
+### An amalgamation of semantic segmentation and neural style transfer
 
 Sidharrth Nagappan, Nadia Ahmad Pirdaus and Cornelius Pang
 
